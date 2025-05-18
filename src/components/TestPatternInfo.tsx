@@ -1,13 +1,12 @@
 // src/components/TestPatternInfo.tsx
 import React from 'react';
-// import { cn } from '@/lib/utils'; // Not used in this specific component, but good to have if needed
 
 interface TestPatternData {
   totalQuestions: number;
   totalMarks: number;
   marksPerQuestion: number;
   timeMinutes: number;
-  negativeMarking: number; // e.g., 0.50
+  negativeMarking: number; 
 }
 
 interface SectionData {
@@ -23,9 +22,6 @@ interface TestPatternInfoProps {
 
 export function TestPatternInfo({ pattern, sections }: TestPatternInfoProps) {
   return (
-    // Consider removing mb-12 md:mb-16 if this is primarily for modal use
-    // or if the parent modal container handles spacing.
-    // For now, keeping it as per your original.
     <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-white"> {/* Removed mb-12 md:mb-16 */}
       <div className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Left Side: Test Pattern Details */}
@@ -92,8 +88,8 @@ export function TestPatternInfo({ pattern, sections }: TestPatternInfoProps) {
   );
 }
 
-// Define the specific SSC CGL Tier 1 Pattern Data
-export const sscCglTier1Pattern: TestPatternData = {
+
+export const Tier1Pattern: TestPatternData = {
   totalQuestions: 100,
   totalMarks: 200,
   marksPerQuestion: 2,
@@ -101,7 +97,7 @@ export const sscCglTier1Pattern: TestPatternData = {
   negativeMarking: 0.50,
 };
 
-export const sscCglTier1Sections: SectionData[] = [
+export const Tier1Sections: SectionData[] = [
   { name: 'General Intelligence and Reasoning', questions: 25, marks: 50 },
   { name: 'General Awareness', questions: 25, marks: 50 },
   { name: 'Quantitative Aptitude', questions: 25, marks: 50 },
