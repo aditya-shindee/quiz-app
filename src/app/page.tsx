@@ -8,7 +8,7 @@ import {
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { QuizResultPage } from '@/components/fullQuizResultPage';
 import type { QuizResultPageProps, Question, SectionInfo, UserAnswers } from '@/components/fullQuizResultPage';
-import { Clock, ArrowLeft, RotateCcw, Bookmark, ArrowRight, Square, ChevronDown, ChevronUp, X, Info } from 'lucide-react';
+import { Clock, ArrowLeft, RotateCcw, Bookmark, ArrowRight, Square, ChevronDown, ChevronUp, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 import dummyQuestions from '@/data/quizDummyData';
@@ -19,11 +19,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogClose,
 } from "@/components/ui/dialog"; 
 
-// Import your TestPatternInfo component and data
-import { TestPatternInfo, sscCglTier1Pattern, sscCglTier1Sections } from '@/components/TestPatternInfo'; // Adjust path as needed
+import { TestPatternInfo, Tier1Pattern, Tier1Sections } from '@/components/TestPatternInfo'; // Adjust path as needed
 
 interface QuizTitleHeaderProps {
   fullQuizTitle: string;
@@ -40,13 +38,12 @@ const SECTIONS: ReadonlyArray<Omit<SectionInfo, 'start' | 'end'>> = [
 const MAX_TIME_MINUTES = 60;
 const DEFAULT_MARKS_PER_QUESTION = 2;
 const DEFAULT_NEGATIVE_MARKS = 0.5;
-const STATIC_QUIZ_TITLE = "Aptitude Quiz";
+const QUIZ_TITLE = "Aptitude Quiz";
 
 type QuestionStatus = 'notVisited' | 'notAnswered' | 'answered' | 'markedForReview' | 'answeredAndMarked';
 type QuizState = 'loading' | 'taking' | 'submitting' | 'submitted' | 'error';
 
-export default function StaticFullExamPage() {
-  // Removed: router, originalParams, params, examTierSlug, quizTypeSlug, quizSubTypeSlug
+export default function FullQuizPage() {
 
   const [quizState, setQuizState] = useState<QuizState>('loading');
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -54,7 +51,6 @@ export default function StaticFullExamPage() {
   const [answers, setAnswers] = useState<UserAnswers>({});
   const [questionStatus, setQuestionStatus] = useState<Record<number, QuestionStatus>>({});
   const [timeLeft, setTimeLeft] = useState<number>(MAX_TIME_MINUTES * 60);
-  // const [showExitConfirm, setShowExitConfirm] = useState<boolean>(false); // Not used for static POC back button
   const [error, setError] = useState<string | null>(null);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState<boolean>(false);
   const [finalResults, setFinalResults] = useState<QuizResultPageProps | null>(null);
@@ -67,8 +63,6 @@ export default function StaticFullExamPage() {
       let currentIndex = 0;
       return SECTIONS.map(section => {
           const start = currentIndex;
-          // Important: Use the actual number of questions per section from constants,
-          // but ensure the UI handles cases where fewer questions are loaded for a section.
           const end = start + section.questions;
           currentIndex = end;
           return { ...section, start, end };
@@ -79,7 +73,7 @@ export default function StaticFullExamPage() {
       return sectionBoundaries.find(sec => currentQuestionIndex >= sec.start && currentQuestionIndex < sec.end);
   }, [currentQuestionIndex, sectionBoundaries]);
 
-  const fullQuizTitle = STATIC_QUIZ_TITLE;
+  const fullQuizTitle = QUIZ_TITLE;
 
   const analysis = useMemo(() => {
       let correctCount = 0;
@@ -148,13 +142,10 @@ export default function StaticFullExamPage() {
       setFinalResults(null);
 
       try {
-        // Simulate a small delay for loading effect if desired
-        // await new Promise(resolve => setTimeout(resolve, 50));
-
-        const data = dummyQuestions; // Use imported dummy data
+        const data = dummyQuestions; 
 
         if (data.length === 0) {
-            console.warn(`No questions found in static data. Exam will be empty.`);
+            console.warn(`No questions found in data. Quiz will be empty.`);
             setQuestions([]);
             setQuizState('taking');
             return;
@@ -183,8 +174,8 @@ export default function StaticFullExamPage() {
         setQuizState('taking');
 
       } catch (err: any) {
-        console.error("Error loading/processing static questions:", err);
-        setError(err.message || "Failed to load exam questions.");
+        console.error("Error loading/processing questions:", err);
+        setError(err.message || "Failed to load quiz questions.");
         setQuizState('error');
       }
     };
@@ -290,12 +281,8 @@ export default function StaticFullExamPage() {
    const handleGoBack = useCallback(() => {
        if (quizState === 'submitting') return;
        if (quizState === 'taking' && questions.length > 0) {
-           // Optionally, use the browser's confirm dialog for a static page
            const confirmExit = window.confirm("Are you sure you want to exit? Your progress will be lost.");
            if (confirmExit) {
-               // For a true static page, there's no Next.js router.
-               // You might navigate to a known previous page or just allow the browser back.
-               // window.history.back(); // Or a specific URL if this page is part of a larger static site.
                alert("Exiting quiz. In a real app, you'd navigate away.");
            }
        } else {
@@ -312,7 +299,7 @@ export default function StaticFullExamPage() {
       }
       if (questions.length === 0) {
            console.warn("Attempted to submit with no questions loaded.");
-           setError("Cannot submit an empty exam.");
+           setError("Cannot submit an empty quiz.");
            setQuizState('error');
            return;
        }
@@ -321,14 +308,13 @@ export default function StaticFullExamPage() {
       setShowSubmitConfirm(false);
       setError(null);
 
-      console.log("Submitting static exam...");
+      console.log("Submitting quiz...");
       updateCurrentStatusBeforeNav(currentQuestionIndex);
 
       // Simulate submission delay
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // For static version, no Supabase saving. Directly prepare results.
-      console.log("Static submission complete. Preparing results page...");
+      console.log("submission complete. Preparing results page...");
       const timeTakenInSeconds = Math.max(0, (MAX_TIME_MINUTES * 60) - timeLeft);
 
       const resultsData: QuizResultPageProps = {
@@ -344,15 +330,14 @@ export default function StaticFullExamPage() {
       setFinalResults(resultsData);
       setQuizState('submitted');
       window.scrollTo({ top: 0, behavior: 'smooth' });
-      console.log(`Static exam submitted successfully. Displaying results.`);
+      console.log(`quiz submitted successfully. Displaying results.`);
 
   }, [
       quizState, questions, answers, timeLeft, fullQuizTitle, sectionBoundaries,
-      updateCurrentStatusBeforeNav, currentQuestionIndex // Removed Supabase related deps
+      updateCurrentStatusBeforeNav, currentQuestionIndex
   ]);
 
     useEffect(() => {
-        // This effect links handleAutoSubmit to the stable handleSubmitQuiz
     }, [handleAutoSubmit, handleSubmitQuiz]);
 
    const options: { key: string; value: string }[] = currentQuestion ? [
@@ -362,11 +347,11 @@ export default function StaticFullExamPage() {
     : [];
 
 
-  if (quizState === 'loading') return <div className="flex justify-center items-center min-h-screen text-xl font-semibold animate-pulse text-gray-600">Loading Exam...</div>;
+  if (quizState === 'loading') return <div className="flex justify-center items-center min-h-screen text-xl font-semibold animate-pulse text-gray-600">Loading Quiz...</div>;
 
   if (quizState === 'error') return (
     <div className="flex flex-col justify-center items-center min-h-screen p-10 text-center">
-        <h2 className="text-2xl font-bold text-red-600 mb-4">Exam Error</h2>
+        <h2 className="text-2xl font-bold text-red-600 mb-4">Quiz Error</h2>
         <p className="text-lg text-red-700 bg-red-100 p-4 rounded border border-red-300 max-w-lg">
             {error || "An unknown error occurred."}
         </p>
@@ -438,8 +423,8 @@ export default function StaticFullExamPage() {
                             </DialogHeader>
                             <div className="max-h-[80vh] overflow-y-auto">
                                 <TestPatternInfo
-                                    pattern={sscCglTier1Pattern}
-                                    sections={sscCglTier1Sections}
+                                    pattern={Tier1Pattern}
+                                    sections={Tier1Sections}
                                 />
                             </div>
                         </DialogContent>
@@ -582,7 +567,7 @@ export default function StaticFullExamPage() {
 
           <ConfirmationDialog
               isOpen={showSubmitConfirm}
-              title="Submit Exam?"
+              title="Submit Quiz?"
               message={
                   <span className="text-base">
                       You've attempted <strong className="font-semibold">{analysis.correctCount + analysis.incorrectCount}</strong> out of <strong className="font-semibold">{questions.length}</strong> questions.<br />Are you sure you want to submit?
