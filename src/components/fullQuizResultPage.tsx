@@ -1,10 +1,7 @@
 // src/components/fullQuizResultPage.tsx
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
-// Import Link from next/link for client-side navigation
-import Link from 'next/link';
-// Import the Home icon
+import React, { useState, useMemo } from 'react';
 import { RotateCcw, Clock, CheckCircle, XCircle, HelpCircle, ChevronDown, ChevronRight, Download, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -13,11 +10,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogClose,
 } from "@/components/ui/dialog"; 
 
-// Import your TestPatternInfo component and data
-import { TestPatternInfo, sscCglTier1Pattern, sscCglTier1Sections } from '@/components/TestPatternInfo'; // Adjust path as needed
+import { TestPatternInfo, Tier1Pattern, Tier1Sections } from '@/components/TestPatternInfo';
 
 // --- Types ---
 // Define or import SectionInfo type
@@ -38,12 +33,11 @@ export interface Question {
     option_b: string;
     option_c: string;
     option_d: string;
-    correct_answer: string; // 'a', 'b', 'c', or 'd' (ensure consistency)
+    correct_answer: string; // 'a', 'b', 'c', or 'd' 
     explanation?: string | null;
-    // question_type is not strictly needed here if sectionBoundaries are passed
 }
 
-export type UserAnswers = Record<number, string | null>; // Key is question index (0-based), value is option key ('a', 'b', 'c', 'd') or null
+export type UserAnswers = Record<number, string | null>; 
 
 export interface QuizResultPageProps {
     questions: Question[];
@@ -52,8 +46,7 @@ export interface QuizResultPageProps {
     quizTitle: string;
     marksPerQuestion?: number;
     negativeMarks?: number;
-    sectionBoundaries: SectionInfo[]; // REQUIRED: For section-wise analysis
-    // examInstanceId?: string; // Optional: ID from the saved results table
+    sectionBoundaries: SectionInfo[]; 
 }
 
 // --- Helper Functions ---
@@ -78,7 +71,6 @@ const QuestionReview: React.FC<QuestionReviewProps> = ({ question, userAnswer })
         d: question.option_d,
     };
 
-    // Ensure consistency: convert correct_answer to lowercase if needed
     const correctAnswerKey = question.correct_answer?.toLowerCase();
 
     return (
@@ -107,7 +99,7 @@ const QuestionReview: React.FC<QuestionReviewProps> = ({ question, userAnswer })
                                 isCorrectChoice ? "text-green-700" : "",
                                 isIncorrectUserChoice ? "text-red-700" : "text-gray-700"
                             )}>
-                                {key.toUpperCase()}. {/* Display option letter uppercase */}
+                                {key.toUpperCase()}.
                             </span>
                             <span className={cn(
                                 "flex-grow",
@@ -157,7 +149,6 @@ export const QuizResultPage: React.FC<QuizResultPageProps> = ({
     marksPerQuestion = 2, // Default marks
     negativeMarks = 0.5, // Default negative marks
     sectionBoundaries,
-    // examInstanceId,
 }) => {
     const [expandedQuestionIndex, setExpandedQuestionIndex] = useState<number | null>(null);
 
@@ -199,8 +190,7 @@ export const QuizResultPage: React.FC<QuizResultPageProps> = ({
     // --- Section-wise Analysis Calculation (Memoized) ---
     const sectionAnalysis = useMemo(() => {
         if (!sectionBoundaries || sectionBoundaries.length === 0) {
-            // console.warn("Section boundaries not provided for section analysis.");
-            return []; // Return empty array if no boundaries provided
+            return []; 
         }
 
         return sectionBoundaries.map(section => {
@@ -208,7 +198,6 @@ export const QuizResultPage: React.FC<QuizResultPageProps> = ({
             let incorrectCount = 0;
             let unattemptedCount = 0;
             let sectionScore = 0;
-            // Use the count from boundary info, but verify against actual question range
             const sectionTotalQuestions = Math.min(section.questions, section.end - section.start);
 
             for (let i = section.start; i < section.end && i < questions.length; i++) {
@@ -230,7 +219,6 @@ export const QuizResultPage: React.FC<QuizResultPageProps> = ({
             const attemptedCount = correctCount + incorrectCount;
             const sectionMaxScore = sectionTotalQuestions * marksPerQuestion;
             const accuracy = attemptedCount === 0 ? 0 : (correctCount / attemptedCount) * 100;
-             // sectionScore = Math.max(0, sectionScore); // Optional per-section floor
 
             return {
                 title: section.title,
@@ -243,23 +231,6 @@ export const QuizResultPage: React.FC<QuizResultPageProps> = ({
             };
         });
     }, [questions, userAnswers, marksPerQuestion, negativeMarks, sectionBoundaries]);
-
-    // --- Effects ---
-    // Optional: Prevent leaving page if results aren't saved
-    // useEffect(() => {
-    //     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-    //         // Only show prompt if examInstanceId is not present (implying not saved yet)
-    //         // Or based on some other logic indicating results aren't persisted
-    //         // if (!examInstanceId) {
-    //            const confirmationMessage = 'Quiz results might be lost if you leave or reload. Consider downloading first.';
-    //            event.preventDefault();
-    //            event.returnValue = confirmationMessage;
-    //            return confirmationMessage;
-    //         // }
-    //     };
-    //     window.addEventListener('beforeunload', handleBeforeUnload);
-    //     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-    // }, [/* examInstanceId */]); // Add dependency if using examInstanceId
 
     // --- Event Handlers ---
     const toggleQuestionReview = (index: number) => {
@@ -302,7 +273,7 @@ export const QuizResultPage: React.FC<QuizResultPageProps> = ({
                       </a>
 
                       <div>
-                          <h1 className="text-2xl font-bold">Exam Results</h1>
+                          <h1 className="text-2xl font-bold">Quiz Results</h1>
                           <p className="text-base opacity-90">{quizTitle}</p>
                       </div>
 
@@ -324,8 +295,8 @@ export const QuizResultPage: React.FC<QuizResultPageProps> = ({
                             </DialogHeader>
                             <div className="max-h-[80vh] overflow-y-auto">
                                 <TestPatternInfo
-                                    pattern={sscCglTier1Pattern}
-                                    sections={sscCglTier1Sections}
+                                    pattern={Tier1Pattern}
+                                    sections={Tier1Sections}
                                 />
                             </div>
                         </DialogContent>
@@ -466,7 +437,7 @@ export const QuizResultPage: React.FC<QuizResultPageProps> = ({
                                                         className="text-blue-600 hover:text-blue-800 flex items-center"
                                                         aria-expanded={isExpanded}
                                                         aria-controls={`review-panel-${index}`}
-                                                        title={isExpanded ? "Hide question details" : "Review question details"} // Tooltip for review button
+                                                        title={isExpanded ? "Hide question details" : "Review question details"} 
                                                     >
                                                         {isExpanded ? 'Hide' : 'Review'}
                                                         {isExpanded ? <ChevronDown className="w-4 h-4 ml-1" /> : <ChevronRight className="w-4 h-4 ml-1" />}
@@ -549,4 +520,4 @@ export const QuizResultPage: React.FC<QuizResultPageProps> = ({
     );
 };
 
-export default QuizResultPage; // Optional default export
+export default QuizResultPage;
